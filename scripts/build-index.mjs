@@ -7,6 +7,7 @@
 // size, manifest id/version, previews) and writes:
 //   <out>/index.json                    the catalogue the app and the website read
 //   <out>/previews/<pack>/<widget>.png  widget previews taken from the package
+//   <out>/icons/<pack>.png|svg          the pack's icon, when its manifest has one
 // Exits non-zero when any entry fails, so pull requests are blocked.
 // No dependencies: Node 20+ (fetch, zlib).
 
@@ -111,6 +112,10 @@ export function checkPackage(entry, tag, zip, bytes) {
   for (const w of m.widgets ?? []) {
     if (!w.preview || !zip.read(w.preview)) errors.push(`widget "${w.id}": preview image missing`);
   }
+  if (m.icon !== undefined) {
+    if (typeof m.icon !== 'string' || !/\.(png|svg)$/i.test(m.icon)) errors.push('icon must be a .png or .svg file');
+    else if (!zip.read(m.icon)) errors.push(`icon "${m.icon}" missing`);
+  }
   return errors;
 }
 
@@ -129,6 +134,13 @@ async function buildPack(entry) {
   const repo = await github(`repos/${entry.repo}`);
   const dir = join(out, 'previews', entry.id);
   mkdirSync(dir, { recursive: true });
+  let icon = null;
+  if (m.icon) {
+    const ext = m.icon.toLowerCase().endsWith('.svg') ? 'svg' : 'png';
+    mkdirSync(join(out, 'icons'), { recursive: true });
+    writeFileSync(join(out, 'icons', `${entry.id}.${ext}`), zip.read(m.icon));
+    icon = `icons/${entry.id}.${ext}`;
+  }
   const widgets = m.widgets.map((w) => {
     writeFileSync(join(dir, `${w.id}.png`), zip.read(w.preview));
     return {
@@ -153,6 +165,7 @@ async function buildPack(entry) {
     tags: entry.tags ?? [],
     official: entry.repo.startsWith('vitrine-org/'),
     minEngine: m.minEngine ?? '2.0.0',
+    icon,
     stars: repo.stargazers_count,
     published: rel.published_at,
     download: asset.browser_download_url,

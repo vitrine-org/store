@@ -87,6 +87,11 @@ test('packages must match their entry and release', () => {
   assert.match(errs({ 'vitrine.json': manifest({ id: 'dev.other.pack' }), 'clock/preview.png': 'p' }), /id/);
   assert.match(errs({ 'vitrine.json': manifest() }), /preview/);
   assert.match(errs({ 'clock/preview.png': 'p' }), /vitrine.json missing/);
+  const withIcon = (icon, files = {}) =>
+    errs({ 'vitrine.json': manifest({ icon }), 'clock/preview.png': 'p', ...files });
+  assert.equal(withIcon('assets/icon.png', { 'assets/icon.png': 'i' }), '');
+  assert.match(withIcon('assets/icon.png'), /icon "assets\/icon.png" missing/);
+  assert.match(withIcon('icon.ico', { 'icon.ico': 'i' }), /\.png or \.svg/);
   assert.match(errs({ 'vitrine.json': '{oops', 'clock/preview.png': 'p' }), /vitrine.json/);
   assert.match(errs({ 'vitrine.json': manifest(), 'clock/preview.png': 'p', '../evil': 'x' }), /unsafe/);
   assert.match(
