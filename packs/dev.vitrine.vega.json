@@ -1,0 +1,6 @@
+{
+  "id": "dev.vitrine.vega",
+  "repo": "vitrine-org/vega",
+  "license": "MIT",
+  "tags": ["clock", "calendar", "weather", "productivity"]
+}

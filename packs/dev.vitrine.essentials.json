@@ -2,5 +2,5 @@
   "id": "dev.vitrine.essentials",
   "repo": "vitrine-org/essentials",
   "license": "MIT",
-  "tags": ["clock", "calendar", "system", "weather", "productivity"]
+  "tags": ["system", "clock", "weather"]
 }
